@@ -373,8 +373,8 @@ pub fn componentize_bindgen(
     let render_args = RenderIntrinsicsArgs::builder()
         .intrinsics(&mut bindgen.all_intrinsics)
         .instantiation_occurred(true)
-        .transpile_options(&transpile_opts)
-        .build()?;
+        .transpile_opts(&transpile_opts)
+        .build();
     let js_intrinsics = render_intrinsics(render_args);
     output.push_str(&js_intrinsics);
     output.push_str(&bindgen.src);
@@ -710,6 +710,7 @@ impl JsBindgen<'_> {
             StringEncoding::UTF8,
             func,
             AbiVariant::GuestExport,
+            false,
         );
         self.src.push_str("\n");
 
@@ -855,6 +856,7 @@ impl JsBindgen<'_> {
         string_encoding: StringEncoding,
         func: &Function,
         abi: AbiVariant,
+        is_async: bool,
     ) {
         self.src.push_str("(");
         let mut params = Vec::new();
@@ -888,32 +890,35 @@ impl JsBindgen<'_> {
             ErrHandling::None
         };
 
-        let mut f = FunctionBindgen {
-            is_async: false,
-            tracing_prefix: None,
-            intrinsics: &mut self.all_intrinsics,
-            valid_lifting_optimization: true,
-            sizes: &self.sizes,
-            err,
-            block_storage: Vec::new(),
-            blocks: Vec::new(),
-            callee,
-            memory: Some(&self.memory),
-            realloc: Some(&self.realloc),
-            tmp: 0,
-            params,
-            post_return: None,
-            encoding: match string_encoding {
+        let tracing_prefix = String::new();
+        let mut f = FunctionBindgen::builder()
+            .is_async(is_async)
+            .tracing_prefix(&tracing_prefix)
+            .tracing_enabled(false)
+            .intrinsics(&mut self.all_intrinsics)
+            .valid_lifting_optimization(true)
+            .sizes(&self.sizes)
+            .err(err)
+            .block_storage(Vec::new())
+            .blocks(Vec::new())
+            .callee(callee)
+            .memory(&self.memory)
+            .realloc(&self.realloc)
+            .tmp(0)
+            .params(params)
+            .asmjs(false)
+            .requires_async_porcelain(false)
+            .encoding(match string_encoding {
                 StringEncoding::UTF8 => StringEncoding::UTF8,
                 StringEncoding::UTF16 => todo!("UTF16 encoding"),
                 StringEncoding::CompactUTF16 => todo!("Compact UTF16 encoding"),
-            },
-            src: Source::default(),
-            resource_map: &resource_map,
-            clear_resource_borrows: false,
-            resolve: self.resolve,
-            callee_resource_dynamic: false,
-        };
+            })
+            .src(Source::default())
+            .resource_map(&resource_map)
+            .clear_resource_borrows(false)
+            .resolve(self.resolve)
+            .callee_resource_dynamic(false)
+            .build();
         abi::call(
             self.resolve,
             abi,
@@ -977,10 +982,11 @@ impl JsBindgen<'_> {
 
         self.bindgen(
             sig.params.len(),
-            &format!("await {callee}"),
+            &callee,
             string_encoding,
             func,
             AbiVariant::GuestImport,
+            true,
         );
         self.src.push_str("\n");
 

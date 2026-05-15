@@ -13,8 +13,8 @@ too_many_arguments = 'allow'
 [workspace.dependencies]
 anyhow = { version = "1.0.95", default-features = false }
 heck = { version = "0.5", default-features = false }
-js-component-bindgen = { git = "https://github.com/chaynabors/jco.git", branch = "main" }
-wirm = { version = "4.0.0", default-features = false }
+js-component-bindgen = { version = "1.19.0-rc.5" }
+wirm = { git = "https://github.com/chaynabors/wirm.git", branch = "main", default-features = false }
 rand = { version = "0.8", default-features = false }
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 wasm-encoder = { version = "0.245.1", features = [ "component-model", "std" ] }

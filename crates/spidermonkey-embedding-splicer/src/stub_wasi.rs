@@ -49,7 +49,7 @@ where
         let mut builder = FunctionBuilder::new(&params, &results);
         let _args = stub(&mut builder)?;
 
-        builder.replace_import_in_module(module, iid);
+        builder.replace_import_in_module(module, iid)?;
 
         return Ok(Some(fid));
     }
@@ -87,7 +87,7 @@ where
     let mut builder = FunctionBuilder::new(&params, &results);
     let _args = stub(&mut builder)?;
 
-    builder.replace_import_in_module(module, iid);
+    builder.replace_import_in_module(module, iid)?;
 
     Ok(Some(fid))
 }

@@ -370,7 +370,7 @@ pub fn splice(
         .custom_sections
         .get_id("component-type:bindings".to_string());
     if let Some(component_section_id) = maybe_component_section_id {
-        module.custom_sections.delete(component_section_id);
+        module.delete_custom_section(component_section_id);
     }
 
     // extract the native instructions from sample functions
